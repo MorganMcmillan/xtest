@@ -19,9 +19,9 @@ local function fail(sMainMessage, sAssertionMessage, nLevel)
 end
 
 ---@class (exact) TestSettings
----@field continue boolean whether or not the test should continue in the case that one fails
----@field printLabel boolean should each test print its label
----@field printResults boolean should results be printed
+---@field continue? boolean whether or not the test should continue in the case that one fails
+---@field printLabel? boolean should each test print its label
+---@field printResults? boolean should results be printed
 
 ---@type TestSettings
 local DEFAULT_TEST_SETTINGS = {
@@ -56,6 +56,7 @@ function xtest.run(tests, testSettings, printFn)
   local passed, failed = 0, 0
   local label = nil
 
+  local startTime = os.clock()
   for i = 1, #tests do
     local test = tests[i]
 
@@ -90,9 +91,10 @@ function xtest.run(tests, testSettings, printFn)
     end
   end
 
-  local results = { passed = passed, failed = failed, total = testNumber}
+  local timeTaken = os.clock() - startTime
+  local results = { passed = passed, failed = failed, total = testNumber, timeTaken = timeTaken}
   if testSettings.printResults then
-    print(("Test results:\n\tpassed: %s\n\tfailed: %s\n\ttotal: %s"):format(passed, failed, testNumber))
+    print(("Test results:\n\tpassed: %s\n\tfailed: %s\n\ttotal: %s\n\ttime taken: %f seconds"):format(passed, failed, testNumber, timeTaken))
   end
   return failed == 0, results
 end
