@@ -218,7 +218,7 @@ function xtest.assertString(value)
 	return value
 end
 
----Asserts that `value` is of type `nil`
+---Asserts that `value` is of type `boolean`
 ---@param value any
 ---@return any value
 function xtest.assertBoolean(value)
@@ -226,7 +226,7 @@ function xtest.assertBoolean(value)
 	return value
 end
 
----Asserts that `value` is of type `nil`
+---Asserts that `value` is `true`
 ---@param value any
 ---@return any value
 function xtest.assertTrue(value)
@@ -234,7 +234,7 @@ function xtest.assertTrue(value)
 	return value
 end
 
----Asserts that `value` is of type `nil`
+---Asserts that `value` is `false`
 ---@param value any
 ---@return any value
 function xtest.assertFalse(value)
@@ -242,7 +242,7 @@ function xtest.assertFalse(value)
 	return value
 end
 
----Asserts that `value` is of type `nil`
+---Asserts that `value` is of type `table`
 ---@param value any
 ---@return any value
 function xtest.assertTable(value)
@@ -250,7 +250,7 @@ function xtest.assertTable(value)
 	return value
 end
 
----Asserts that `value` is of type `nil`
+---Asserts that `value` is of type `function`
 ---@param value any
 ---@return any value
 function xtest.assertFunction(value)
@@ -258,7 +258,7 @@ function xtest.assertFunction(value)
 	return value
 end
 
----Asserts that `value` is of type `nil`
+---Asserts that `value` is of type `thread`
 ---@param value any
 ---@return any value
 function xtest.assertThread(value)
@@ -266,7 +266,7 @@ function xtest.assertThread(value)
 	return value
 end
 
----Asserts that `value` is of type `nil`
+---Asserts that `value` is of type `userdata`
 ---@param value any
 ---@return any value
 function xtest.assertUserdata(value)
