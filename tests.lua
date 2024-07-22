@@ -1,4 +1,5 @@
--- Not to be confused with xtest.lua
+-- This file is not to be confused with xtest.lua
+
 local xtest = require("xtest")
 -- shortened alias of xtest for convienience
 local x = xtest
@@ -47,7 +48,4 @@ local success, result = xtest.run({
     x.assertThread(coroutine.create(function()end))
     --TODO: add assert for userdata
   end
-},
-nil) --nop print
-
---print(result)
+})
