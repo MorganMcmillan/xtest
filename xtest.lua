@@ -7,7 +7,7 @@ local xtest = {}
 ---@return string
 local function stringify(s)
   --TODO: Serialize tables to make them printable
-  if type(s) == "string" then return '"' .. s .. '"' end
+  if type(s) == "string" then return ("%q"):format(s) end
   return tostring(s)
 end
 
@@ -29,9 +29,9 @@ local DEFAULT_TEST_SETTINGS = {
 ---@param tests (function|string)[] the array of test functions and test labels
 ---@param testSettings? any
 ---@param printFn? fun(...:string)
----@return boolean success, string results
+---@return boolean success, table results
 function xtest.run(tests, testSettings, printFn)
-  if type(tests) ~= "table" then error("tests must be a table of functions and label strings") end
+  if type(tests) ~= "table" then error("Tests must be a table of functions and label strings") end
 
   local print = printFn or print
 
@@ -56,8 +56,10 @@ function xtest.run(tests, testSettings, printFn)
     if type(test) == "string" then
       if testSettings.printLabel then
         -- Set the label of the current test
+        -- Appending it as a new line if there was already one
         label = label and (label .. '\n' .. test) or test
       end
+
     elseif type(test) == "function" then
       if testSettings.printLabel then
         testNumber = testNumber + 1
@@ -68,22 +70,23 @@ function xtest.run(tests, testSettings, printFn)
       local ok, message = pcall(test)
       if ok then
         passed = passed + 1
-        print"passed!\n"
+        print"Passed!\n"
       else
         failed = failed + 1
+        print"Failed!\n"
         print(message)
         if not testSettings.continue then break end
       end
     else
       error(
-      "tests should only contain a string label or a function, but instead got " .. test .." of type".. type(test) .. " at index " .. i ..
+      "Tests should only contain a string label or a function, but instead got " .. test .." of type".. type(test) .. " at index " .. i ..
       ".", 1)
     end
   end
 
-  local results = ("Test results:\n\tpassed: %s\n\tfailed: %s\n\ttotal: %s"):format(passed, failed, passed + failed)
+  local results = { passed = passed, failed = failed, total = testNumber}
   if testSettings.printResults then
-    print(results)
+    print(("Test results:\n\tpassed: %s\n\tfailed: %s\n\ttotal: %s"):format(passed, failed, testNumber))
   end
   return failed == 0, results
 end

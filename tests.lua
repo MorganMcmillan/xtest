@@ -4,6 +4,7 @@ local xtest = require("xtest")
 -- shortened alias of xtest for convienience
 local x = xtest
 
+-- The following tests should all run successfully
 local success, result = xtest.run({
   "xtest.assert",
   function ()
@@ -48,4 +49,4 @@ local success, result = xtest.run({
     x.assertThread(coroutine.create(function()end))
     --TODO: add assert for userdata
   end
-})
+},{continue = true})
