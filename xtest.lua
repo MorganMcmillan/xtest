@@ -262,7 +262,7 @@ end
 ---@param value any
 ---@return any value
 function xtest.assertNil(value)
-  if value ~= nil then fail("type(value) = ".. '"' .. type(value) .. '"\nvalue = '.. stringify(value), "'type(value) == \"nil\"'") end
+  if value ~= nil then fail('type(value) = "' .. type(value) .. '"\nvalue = '.. stringify(value), "'type(value) == \"nil\"'") end
 	return value
 end
 
@@ -270,7 +270,7 @@ end
 ---@param value any
 ---@return any value
 function xtest.assertNotNil(value)
-  if value == nil then fail("type(value) = ".. '"' .. type(value) .. '"\nvalue = '.. stringify(value), "'type(value) == \"nil\"'") end
+  if value == nil then fail('type(value) = "' .. type(value) .. '"\nvalue = '.. stringify(value), "'type(value) == \"nil\"'") end
 	return value
 end
 
@@ -278,7 +278,7 @@ end
 ---@param value any
 ---@return number value
 function xtest.assertNumber(value)
-  if type(value) ~= "number" then fail("type(value) = ".. '"' .. type(value) .. '"\nvalue = '.. stringify(value), "'type(value) == \"number\"'") end
+  if type(value) ~= "number" then fail('type(value) = "' .. type(value) .. '"\nvalue = '.. stringify(value), "'type(value) == \"number\"'") end
 	return value
 end
 
@@ -286,7 +286,7 @@ end
 ---@param value any
 ---@return integer value
 function xtest.assertInteger(value)
-  if type(value) ~= "number" then fail("type(value) = ".. '"' .. type(value) .. '"\nvalue = '.. stringify(value), "'type(value) == \"number\"'") end
+  if type(value) ~= "number" then fail('type(value) = "' .. type(value) .. '"\nvalue = '.. stringify(value), "'type(value) == \"number\"'") end
   if math.floor(value) ~= value then fail("value = ".. value, "'value is integer'") end
 	return value
 end
@@ -295,7 +295,7 @@ end
 ---@param value any
 ---@return string value
 function xtest.assertString(value)
-  if type(value) ~= "string" then fail("type(value) = ".. '"' .. type(value) .. '"\nvalue = '.. stringify(value), "'type(value) == \"string\"'") end
+  if type(value) ~= "string" then fail('type(value) = "' .. type(value) .. '"\nvalue = '.. stringify(value), "'type(value) == \"string\"'") end
 	return value
 end
 
@@ -303,7 +303,7 @@ end
 ---@param value any
 ---@return boolean value
 function xtest.assertBoolean(value)
-  if type(value) ~= "boolean" then fail("type(value) = ".. '"' .. type(value) .. '"\nvalue = '.. stringify(value), "'type(value) == \"boolean\"'") end
+  if type(value) ~= "boolean" then fail('type(value) = "' .. type(value) .. '"\nvalue = '.. stringify(value), "'type(value) == \"boolean\"'") end
 	return value
 end
 
@@ -327,7 +327,7 @@ end
 ---@param value any
 ---@return table value
 function xtest.assertTable(value)
-  if type(value) ~= "table" then fail("type(value) = ".. '"' .. type(value) .. '"\nvalue = '.. stringify(value), "'type(value) == \"table\"'") end
+  if type(value) ~= "table" then fail('type(value) = "' .. type(value) .. '"\nvalue = '.. stringify(value), "'type(value) == \"table\"'") end
 	return value
 end
 
@@ -335,7 +335,7 @@ end
 ---@param value any
 ---@return function value
 function xtest.assertFunction(value)
-  if type(value) ~= "function" then fail("type(value) = ".. '"' .. type(value) .. '"\nvalue = '.. stringify(value), "'type(value) == \"function\"'") end
+  if type(value) ~= "function" then fail('type(value) = "' .. type(value) .. '"\nvalue = '.. stringify(value), "'type(value) == \"function\"'") end
 	return value
 end
 
@@ -343,7 +343,7 @@ end
 ---@param value any
 ---@return thread value
 function xtest.assertThread(value)
-  if type(value) ~= "thread" then fail("type(value) = ".. '"' .. type(value) .. '"\nvalue = '.. stringify(value), "'type(value) == \"thread\"'") end
+  if type(value) ~= "thread" then fail('type(value) = "' .. type(value) .. '"\nvalue = '.. stringify(value), "'type(value) == \"thread\"'") end
 	return value
 end
 
@@ -351,7 +351,7 @@ end
 ---@param value any
 ---@return userdata value
 function xtest.assertUserdata(value)
-  if type(value) ~= "userdata" then fail("type(value) = ".. '"' .. type(value) .. '"\nvalue = '.. stringify(value), "'type(value) == userdata'") end
+  if type(value) ~= "userdata" then fail('type(value) = "' .. type(value) .. '"\nvalue = '.. stringify(value), "'type(value) == userdata'") end
 	return value
 end
 
