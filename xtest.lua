@@ -132,7 +132,7 @@ function xtest.assertNot(cond, message)
   return cond
 end
 
--- Arithmetic assertions
+-- Equality assertions
 
 ---Asserts that `left` expression is equal to `right` expression
 ---@param left any
@@ -214,7 +214,7 @@ function xtest.assertDeepNe(left, right)
   end
 end
 
-
+-- Arithmetic assertions
 
 ---Asserts that `left` expression is less than `right` expression
 ---@param left number
@@ -415,7 +415,10 @@ function xtest.assertComputer()
   if pocket or turtle then fail("Not running on a normal computer", "'computer'") end
 end
 
---TODO: Add assertAdvanced for advanced computer
+---Asserts that the code is running on an advanced computer
+function xtest.assertAdvanced()
+  if not shell.openTab then fail("Not running on advanced computer", "'advanced computer'") end
+end
 
 ---Asserts that an item is in the inventory
 ---@param item string
