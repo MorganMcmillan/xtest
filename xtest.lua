@@ -214,7 +214,7 @@ function xtest.assertDeepNe(left, right)
   end
 end
 
-
+-- Arithmetic assertions
 
 ---Asserts that `left` expression is less than `right` expression
 ---@param left number
