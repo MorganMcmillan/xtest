@@ -1,4 +1,4 @@
-local error, type, tostring, pairs = error, type, tostring, pairs
+local error, type, tostring, pairs, unpack = error, type, tostring, pairs, unpack or table.unpack
 local xtest = {}
 
 --- Converts a value to a string for printing.
@@ -25,7 +25,7 @@ end
 local function fail(sMainMessage, sAssertionMessage, nLevel)
   --Level is set to three so the error points back to the user's test file
   error("assertion " .. (sAssertionMessage and (sAssertionMessage .. " ") or "") .. "failed" ..
-    (sMainMessage and ":\n" .. sMainMessage or "!"),
+    (sMainMessage and ":\n" .. sMainMessage or "!").. "\n",
     nLevel or 3)
 end
 
@@ -160,7 +160,7 @@ local function deepEquals(left, right)
   for k, v in pairs(left) do
     local v2 = right[k]
     if type(v) == "table" and type(v2) == "table" then
-      if not deepEquals(v, v2) then
+      if v ~= v2 and not deepEquals(v, v2) then
         return false
       end
     else
@@ -169,6 +169,7 @@ local function deepEquals(left, right)
       end
     end
   end
+  return true
 end
 
 ---Asserts that `left` table is deeply equal to `right` table, meaning that both have the same keys with the same values, and all subtables meet the same conditions
@@ -194,11 +195,14 @@ end
 ---@param left table
 ---@param right table
 function xtest.assertShallowNe(left, right)
+  local isEqual = true
   for k, v in pairs(left) do
-    if right[k] == v then
-      fail("left["..stringify(k).."] = " .. v .. ",\nright["..stringify(k).."] = " .. right[k], "'left is not shallowly equal to right'")
+    if right[k] ~= v then
+      isEqual = false
+      break
     end
   end
+  if isEqual then fail("left = " .. stringify(left) .. ",\nright = " .. stringify(right), "'left is not shallowly equal to right'") end
 end
 
 ---Asserts that `left` table is not deeply equal to `right` table, meaning that both do not have all the same keys with the same values, and all subtables meet the same conditions
@@ -258,88 +262,96 @@ end
 ---@param value any
 ---@return any value
 function xtest.assertNil(value)
-  if value ~= nil then fail("type(value) = ".. type(value), "'value == nil'") end
+  if value ~= nil then fail("type(value) = ".. '"' .. type(value) .. '"' .. "\n" .. "value = ".. stringify(value), "'type(value) == \"nil\"'") end
+	return value
+end
+
+---Asserts that `value` is not of type `nil`
+---@param value any
+---@return any value
+function xtest.assertNotNil(value)
+  if value == nil then fail("type(value) = ".. '"' .. type(value) .. '"' .. "\n" .. "value = ".. stringify(value), "'type(value) == \"nil\"'") end
 	return value
 end
 
 ---Asserts that `value` is of type `number`
 ---@param value any
----@return any value
+---@return number value
 function xtest.assertNumber(value)
-  if type(value) ~= "number" then fail("type(value) = ".. type(value), "'type(value) == number'") end
+  if type(value) ~= "number" then fail("type(value) = ".. '"' .. type(value) .. '"' .. "\n" .. "value = ".. stringify(value), "'type(value) == \"number\"'") end
 	return value
 end
 
 ---Asserts that `value` is of type `number` and is an integer
 ---@param value any
----@return any value
+---@return integer value
 function xtest.assertInteger(value)
-  if type(value) ~= "number" then fail("type(value) = ".. type(value), "'type(value) == number'") end
+  if type(value) ~= "number" then fail("type(value) = ".. '"' .. type(value) .. '"' .. "\n" .. "value = ".. stringify(value), "'type(value) == \"number\"'") end
   if math.floor(value) ~= value then fail("value = ".. value, "'value is integer'") end
 	return value
 end
 
 ---Asserts that `value` is of type `string`
 ---@param value any
----@return any value
+---@return string value
 function xtest.assertString(value)
-  if type(value) ~= "string" then fail("type(value) = ".. type(value), "'type(value) == string'") end
+  if type(value) ~= "string" then fail("type(value) = ".. '"' .. type(value) .. '"' .. "\n" .. "value = ".. stringify(value), "'type(value) == \"string\"'") end
 	return value
 end
 
 ---Asserts that `value` is of type `boolean`
 ---@param value any
----@return any value
+---@return boolean value
 function xtest.assertBoolean(value)
-  if type(value) ~= "boolean" then fail("type(value) = ".. type(value), "'type(value) == boolean'") end
+  if type(value) ~= "boolean" then fail("type(value) = ".. '"' .. type(value) .. '"' .. "\n" .. "value = ".. stringify(value), "'type(value) == \"boolean\"'") end
 	return value
 end
 
 ---Asserts that `value` is `true`
 ---@param value any
----@return any value
+---@return boolean value
 function xtest.assertTrue(value)
-  if value ~= true then fail("value = ".. value, "'value == true'") end
+  if value ~= true then fail("value = ".. stringify(value), "'value == true'") end
 	return value
 end
 
 ---Asserts that `value` is `false`
 ---@param value any
----@return any value
+---@return boolean value
 function xtest.assertFalse(value)
-  if value ~= false then fail("value = ".. value, "'value == false'") end
+  if value ~= false then fail("value = ".. stringify(value), "'value == false'") end
 	return value
 end
 
 ---Asserts that `value` is of type `table`
 ---@param value any
----@return any value
+---@return table value
 function xtest.assertTable(value)
-  if type(value) ~= "table" then fail("type(value) = ".. type(value), "'type(value) == table'") end
+  if type(value) ~= "table" then fail("type(value) = ".. '"' .. type(value) .. '"' .. "\n" .. "value = ".. stringify(value), "'type(value) == \"table\"'") end
 	return value
 end
 
 ---Asserts that `value` is of type `function`
 ---@param value any
----@return any value
+---@return function value
 function xtest.assertFunction(value)
-  if type(value) ~= "function" then fail("type(value) = ".. type(value), "'type(value) == function'") end
+  if type(value) ~= "function" then fail("type(value) = ".. '"' .. type(value) .. '"' .. "\n" .. "value = ".. stringify(value), "'type(value) == \"function\"'") end
 	return value
 end
 
 ---Asserts that `value` is of type `thread`
 ---@param value any
----@return any value
+---@return thread value
 function xtest.assertThread(value)
-  if type(value) ~= "thread" then fail("type(value) = ".. type(value), "'type(value) == thread'") end
+  if type(value) ~= "thread" then fail("type(value) = ".. '"' .. type(value) .. '"' .. "\n" .. "value = ".. stringify(value), "'type(value) == \"thread\"'") end
 	return value
 end
 
 ---Asserts that `value` is of type `userdata`
 ---@param value any
----@return any value
+---@return userdata value
 function xtest.assertUserdata(value)
-  if type(value) ~= "userdata" then fail("type(value) = ".. type(value), "'type(value) == userdata'") end
+  if type(value) ~= "userdata" then fail("type(value) = ".. '"' .. type(value) .. '"' .. "\n" .. "value = ".. stringify(value), "'type(value) == userdata'") end
 	return value
 end
 
@@ -349,7 +361,7 @@ end
 ---@return any value
 function xtest.assertType(value, sType)
   local ty = type(value)
-  if ty ~= sType then fail("value = " .. stringify(value) .. "\ntype = " .. ty, "'type(v) == " .. sType .. "'") end
+  if ty ~= sType then fail("value = " .. stringify(value) .. "\ntype = " .. ty, "'type(value) == " .. sType .. "'") end
   return value
 end
 
@@ -358,7 +370,7 @@ end
 ---@param sType "nil" | "number" | "string" | "boolean" | "table" | "function" | "thread" | "userdata"
 ---@return any value
 function xtest.assertNotType(value, sType)
-  if type(value) == sType then fail("value = " .. stringify(value) .. "\ntype = " .. sType, "'type(v) ~= " .. sType .. "'") end
+  if type(value) == sType then fail("value = " .. stringify(value) .. "\ntype = " .. sType, "'type(value) ~= " .. sType .. "'") end
   return value
 end
 
@@ -368,15 +380,18 @@ end
 function xtest.assertOk(fun, ...)
   local result = {pcall(fun, ...)}
   if not result[1] then fail(result[2], "'function does not throw error'") end
-  return table.unpack(result,2)
+  return unpack(result,2)
 end
 
 ---Asserts that a function trows any error when called
 function xtest.assertError(fun, ...)
   local result = {pcall(fun, ...)}
   if result[1] then fail(result[2], "'function throws error'") end
-  return table.unpack(result,2)
+  return unpack(result,2)
 end
+
+xtest.assertNotOk = xtest.assertError
+xtest.assertNotError = xtest.assertOk
 
 -- Computercraft helper assertions
 
@@ -439,6 +454,7 @@ function xtest.assertHasItemCount(item,count)
   end
   fail("No item ".. item .." with count ".. count .." in inventory", "'Has item ".. item .." with count ".. count .." in inventory'")
 end
+
 ---Asserts that a peripheral is attached
 ---@param name string
 function xtest.assertPeripheral(name)
