@@ -5,12 +5,23 @@ local xtest = {}
 --- Adds quotation marks around string values
 ---@param s any
 ---@return string
-local function stringify(s)
+local function stringify(s, indentation)
+  indentation = indentation or 0
   --TODO: Serialize tables to make them printable
-  if type(s) == "string" then return ("%q"):format(s) end
+  if type(s) == "string" then
+    local formatted = ("%q"):format(s):gsub("\\\n", "\\n")
+    return formatted
+  end
   return tostring(s)
 end
 
+---Fails an assertion with the given message and level
+---A failed assertion takes the following form:
+---`assertion <sAssertionMessage> failed:`
+---`<sMainMessage>`
+---@param sMainMessage string
+---@param sAssertionMessage? string
+---@param nLevel? number
 local function fail(sMainMessage, sAssertionMessage, nLevel)
   --Level is set to three so the error points back to the user's test file
   error("assertion " .. (sAssertionMessage and (sAssertionMessage .. " ") or "") .. "failed" ..
@@ -32,8 +43,8 @@ local DEFAULT_TEST_SETTINGS = {
 
 ---Runs each test sequencially
 ---@param tests (function|string)[] the array of test functions and test labels
----@param testSettings? TestSettings
----@param printFn? fun(...:string)
+---@param testSettings? TestSettings the settings used, defaukts to `DEFAULT_TEST_SETTINGS`
+---@param printFn? fun(...:string) the function to use for printing, defaults to `print`
 ---@return boolean success, table results
 function xtest.run(tests, testSettings, printFn)
   if type(tests) ~= "table" then error("Tests must be a table of functions and label strings") end
@@ -124,24 +135,82 @@ end
 -- Arithmetic assertions
 
 ---Asserts that `left` expression is equal to `right` expression
----@param left number
----@param right number
----@return number left
----@return number right
+---@param left any
+---@param right any
+---@return any left
+---@return any right
 function xtest.assertEq(left, right)
   if left ~= right then fail("left = " .. stringify(left) .. ",\nright = " .. stringify(right), "'left == right'") end
   return left, right
 end
 
+---Asserts that `left` table is shallowly equal to `right` table, meaning that both have the same keys with the same values
+---@param left table
+---@param right table
+function xtest.assertShallowEq(left, right)
+  for k, v in pairs(left) do
+    if right[k] ~= v then
+      fail("left["..stringify(k).."] = " .. v .. ",\nright["..stringify(k).."] = " .. right[k], "'left is shallowly equal to right'")
+    end
+  end
+end
+
+-- Checks if two tables are deeply equal
+local function deepEquals(left, right)
+  for k, v in pairs(left) do
+    local v2 = right[k]
+    if type(v) == "table" and type(v2) == "table" then
+      if not deepEquals(v, v2) then
+        return false
+      end
+    else
+      if v ~= v2 then
+        return false
+      end
+    end
+  end
+end
+
+---Asserts that `left` table is deeply equal to `right` table, meaning that both have the same keys with the same values, and all subtables meet the same conditions
+---@param left table
+---@param right table
+function xtest.assertDeepEq(left, right)
+  if not deepEquals(left, right) then
+    fail("left = " .. stringify(left) .. ",\nright = " .. stringify(right), "'left is deeply equal to right'")
+  end
+end
+
 ---Asserts that `left` expression is not equal to `right` expression
----@param left number
----@param right number
----@return number left
----@return number right
+---@param left any
+---@param right any
+---@return any left
+---@return any right
 function xtest.assertNe(left, right)
   if left == right then fail("left = " .. stringify(left) .. ",\nright = " .. stringify(right), "'left ~= right'") end
   return left, right
 end
+
+---Asserts that `left` table is not shallowly equal to `right` table, meaning that both do not have all the same keys with the same values
+---@param left table
+---@param right table
+function xtest.assertShallowNe(left, right)
+  for k, v in pairs(left) do
+    if right[k] == v then
+      fail("left["..stringify(k).."] = " .. v .. ",\nright["..stringify(k).."] = " .. right[k], "'left is not shallowly equal to right'")
+    end
+  end
+end
+
+---Asserts that `left` table is not deeply equal to `right` table, meaning that both do not have all the same keys with the same values, and all subtables meet the same conditions
+---@param left table
+---@param right table
+function xtest.assertDeepNe(left, right)
+  if deepEquals(left, right) then
+    fail("left = " .. stringify(left) .. ",\nright = " .. stringify(right), "'left is not deeply equal to right'")
+  end
+end
+
+
 
 ---Asserts that `left` expression is less than `right` expression
 ---@param left number
@@ -307,6 +376,84 @@ function xtest.assertError(fun, ...)
   local result = {pcall(fun, ...)}
   if result[1] then fail(result[2], "'function throws error'") end
   return table.unpack(result,2)
+end
+
+-- Computercraft helper assertions
+
+---Asserts that the code is running in CC
+function xtest.assertCC()
+  if not _CC_DEFAULT_SETTINGS then fail("Not running in CC", "'Running in CC'") end
+end
+
+---Asserts that the code is running on a turtle
+function xtest.assertTurtle()
+  if not turtle then fail("Not running on turtle", "'turtle'") end
+end
+
+---Asserts that the code is running on a Turtle
+function xtest.assertPocket()
+  if not pocket then fail("Not running on pocket computer", "'pocket computer'") end
+end
+
+---Asserts that the code is running on a normal computer
+function xtest.assertComputer()
+  if pocket or turtle then fail("Not running on a normal computer", "'computer'") end
+end
+
+--TODO: Add assertAdvanced for advanced computer
+
+---Asserts that an item is in the inventory
+---@param item string
+---@return number index
+function xtest.assertHasItem(item)
+  for i=1,16 do
+    turtle.select(i)
+    local detail = turtle.getItemDetail()
+    if detail then
+      if detail.name == item then
+        return i
+      end
+    end
+  end
+  fail("No item ".. item .." in inventory", "'Has item ".. item .." in inventory'")
+end
+
+---Asserts that an item is in the inventory and has at least `count` of it
+---@param item string
+---@param count number
+---@return number[] indexes
+function xtest.assertHasItemCount(item,count)
+  local indexes = {}
+  for i=1,16 do
+    turtle.select(i)
+    local detail = turtle.getItemDetail()
+    if detail then
+      if detail.name == item then
+        indexes[#indexes+1] = i
+        count = count - detail.count
+        if count <= 0 then
+          return indexes
+        end
+      end
+    end
+  end
+  fail("No item ".. item .." with count ".. count .." in inventory", "'Has item ".. item .." with count ".. count .." in inventory'")
+end
+---Asserts that a peripheral is attached
+---@param name string
+function xtest.assertPeripheral(name)
+  if not peripheral.find(name) then fail("Peripheral ".. name .. "is not attached", "'Peripheral  ".. name .." '") end
+end
+
+---Asserts that a peripheral is attached on a side
+---@param side "bottom" | "top" | "left" | "right" | "front" | "back"
+function xtest.assertPeripheralOnSide(side)
+  if not peripheral.isPresent(side) then fail("No peripheral on side".. side .. "is attached", side .." peripheral present'") end
+end
+
+---Asserts that rednet is open
+function xtest.assertRednetIsOpen()
+  if not rednet.isOpen() then fail("No connections on Rednet are currently open", "'rednet.isOpen()'") end
 end
 
 return xtest
