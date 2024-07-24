@@ -66,8 +66,9 @@ local success, result = xtest.run({
     -- Assert that all assert functions work in case of failure
     print "Note that none of the following failure messages are actuall failures of the test:"
     print(x.assertError(x.assert, false, "always false"))
+    print(x.assertError(x.assert, false)) -- No message
     print(x.assertError(x.assertNot, true, "always true"))
-    print(x.assertError(x.assertNot, true, "always true"))
+    print(x.assertError(x.assertNot, true)) -- No message
     -- Arithmetic
     print(x.assertError(x.assertLt, 20, 10))
     print(x.assertError(x.assertGt, 5, 100))

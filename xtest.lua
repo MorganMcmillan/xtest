@@ -19,7 +19,7 @@ end
 ---A failed assertion takes the following form:
 ---`assertion <sAssertionMessage> failed:`
 ---`<sMainMessage>`
----@param sMainMessage string
+---@param sMainMessage? string
 ---@param sAssertionMessage? string
 ---@param nLevel? number
 local function fail(sMainMessage, sAssertionMessage, nLevel)
@@ -118,7 +118,6 @@ end
 ---@param message? string
 ---@return any cond
 function xtest.assert(cond, message)
-  message = message or "Condition is true"
   if not cond then fail(message) end
   return cond
 end
@@ -128,7 +127,6 @@ end
 ---@param message? string
 ---@return any cond
 function xtest.assertNot(cond, message)
-  message = message or "Condition is not true"
   if cond then fail(message) end
   return cond
 end
