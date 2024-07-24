@@ -30,7 +30,7 @@ local function fail(sMainMessage, sAssertionMessage, nLevel)
 end
 
 ---@class (exact) TestSettings
----@field continue? boolean whether or not the test should continue in the case that one fails
+---@field continue? boolean should the tests continue after failure
 ---@field printLabel? boolean should each test print its label
 ---@field printResults? boolean should results be printed
 
