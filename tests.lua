@@ -30,7 +30,7 @@ local success, result = xtest.run({
     x.assertType({},"table")
     x.assertType(function()end,"function")
     x.assertType(coroutine.create(function()end),"thread")
-    --TODO: add assert for userdata
+    x.assertType(io.stdout,"userdata")
   end,
   "Arithmetic assertions",
   function ()
@@ -57,7 +57,7 @@ local success, result = xtest.run({
     x.assertTable{}
     x.assertFunction(function()end)
     x.assertThread(coroutine.create(function()end))
-    --TODO: add assert for userdata
+    x.assertUserdata(io.stdout)
   end,
   "Error assertions",
   function ()
