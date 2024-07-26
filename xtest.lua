@@ -1,4 +1,4 @@
-local error, type, tostring, pairs, unpack = error, type, tostring, pairs, unpack or table.unpack
+local abs, error, type, tostring, pairs, unpack = math.abs, error, type, tostring, pairs, unpack or table.unpack
 local xtest = {}
 
 --- Converts a value to a string for printing.
@@ -113,7 +113,7 @@ end
 
 -- Basic assertions
 
----Asserts the given condition is true, and fails with a message if it does not
+---Asserts the given condition is true, and fails with a message if it is not
 ---@param cond any
 ---@param message? string
 ---@return any cond
@@ -122,7 +122,7 @@ function xtest.assert(cond, message)
   return cond
 end
 
----Asserts the given condition is false, and fails with a message if it does not
+---Asserts the given condition is false, and fails with a message if it is not
 ---@param cond any
 ---@param message? string
 ---@return any cond
@@ -146,6 +146,8 @@ end
 ---Asserts that `left` table is shallowly equal to `right` table, meaning that both have the same keys with the same values
 ---@param left table
 ---@param right table
+---@return any left
+---@return any right
 function xtest.assertShallowEq(left, right)
   for k, v in pairs(left) do
     if right[k] ~= v then
@@ -153,6 +155,7 @@ function xtest.assertShallowEq(left, right)
         "'left is shallowly equal to right'")
     end
   end
+  return left, right
 end
 
 -- Checks if two tables are deeply equal
@@ -175,10 +178,13 @@ end
 ---Asserts that `left` table is deeply equal to `right` table, meaning that both have the same keys with the same values, and all subtables meet the same conditions
 ---@param left table
 ---@param right table
+---@return any left
+---@return any right
 function xtest.assertDeepEq(left, right)
   if not deepEquals(left, right) then
     fail("left = " .. stringify(left) .. ",\nright = " .. stringify(right), "'left is deeply equal to right'")
   end
+  return left, right
 end
 
 ---Asserts that `left` expression is not equal to `right` expression
@@ -194,6 +200,8 @@ end
 ---Asserts that `left` table is not shallowly equal to `right` table, meaning that both do not have all the same keys with the same values
 ---@param left table
 ---@param right table
+---@return any left
+---@return any right
 function xtest.assertShallowNe(left, right)
   local isEqual = true
   for k, v in pairs(left) do
@@ -202,20 +210,41 @@ function xtest.assertShallowNe(left, right)
       break
     end
   end
-  if isEqual then fail("left = " .. stringify(left) .. ",\nright = " .. stringify(right),
-      "'left is not shallowly equal to right'") end
+  if isEqual then
+    fail("left = " .. stringify(left) .. ",\nright = " .. stringify(right), "'left is not shallowly equal to right'")
+  end
+  return left, right
 end
 
 ---Asserts that `left` table is not deeply equal to `right` table, meaning that both do not have all the same keys with the same values, and all subtables meet the same conditions
 ---@param left table
 ---@param right table
+---@return any left
+---@return any right
 function xtest.assertDeepNe(left, right)
   if deepEquals(left, right) then
     fail("left = " .. stringify(left) .. ",\nright = " .. stringify(right), "'left is not deeply equal to right'")
   end
+  return left, right
 end
 
 -- Arithmetic assertions
+
+---Asserts that two numbers are approximately equal based on a margin
+---@param left number
+---@param right number
+---@return any left
+---@return any right
+function xtest.assertApproxEq(left, right, margin)
+  margin = margin or (2 ^ -52) -- Machine epsilon
+  if math.abs(left - right) <= margin then
+    fail("left = " .. left .. ",\nright = " .. right .. "\nmargin = " .. margin, "'left is approximately equal to right'")
+  end
+  return left, right
+end
+xtest.assertApproximatlyEq = xtest.assertApproxEq
+xtest.assertApproxEqual = xtest.assertApproxEq
+xtest.assertApproximatlyEqual = xtest.assertApproxEq
 
 ---Asserts that `left` expression is less than `right` expression
 ---@param left number
@@ -226,6 +255,8 @@ function xtest.assertLt(left, right)
   if left >= right then fail("left = " .. tostring(left) .. ",\nright = " .. tostring(right), "'left < right'") end
   return left, right
 end
+xtest.assertLess = xtest.assertLt
+xtest.assertLessThan = xtest.assertLt
 
 ---Asserts that `left` expression is greater than `right` expression
 ---@param left number
@@ -237,6 +268,9 @@ function xtest.assertGt(left, right)
   return left, right
 end
 
+xtest.assertGreater = xtest.assertGt
+xtest.assertGreaterThan = xtest.assertGt
+
 ---Asserts that `left` expression is less than or equal to `right` expression
 ---@param left number
 ---@param right number
@@ -246,6 +280,9 @@ function xtest.assertLe(left, right)
   if left > right then fail("left = " .. tostring(left) .. ",\nright = " .. tostring(right), "'left <= right'") end
   return left, right
 end
+
+xtest.assertLessOrEqual = xtest.assertLe
+xtest.assertLessThanOrEqual = xtest.assertLe
 
 ---Asserts that `left` expression is greater than or equal to `right` expression
 ---@param left number
@@ -257,14 +294,19 @@ function xtest.assertGe(left, right)
   return left, right
 end
 
+xtest.assertGreaterOrEqual = xtest.assertGe
+xtest.assertGreaterThanOrEqual = xtest.assertGe
+
 -- Type assertions
 
 ---Asserts that `value` is of type `nil`
 ---@param value any
 ---@return any value
 function xtest.assertNil(value)
-  if value ~= nil then fail('type(value) = "' .. type(value) .. '"\nvalue = ' .. stringify(value),
-      "'type(value) == \"nil\"'") end
+  if value ~= nil then
+    fail('type(value) = "' .. type(value) .. '"\nvalue = ' .. stringify(value),
+      "'type(value) == \"nil\"'")
+  end
   return value
 end
 
@@ -272,8 +314,9 @@ end
 ---@param value any
 ---@return any value
 function xtest.assertNotNil(value)
-  if value == nil then fail('type(value) = "' .. type(value) .. '"\nvalue = ' .. stringify(value),
-      "'type(value) == \"nil\"'") end
+  if value == nil then
+    fail('type(value) = "nil"\nvalue = nil', "'type(value) ~= \"nil\"'")
+  end
   return value
 end
 
@@ -281,8 +324,10 @@ end
 ---@param value any
 ---@return number value
 function xtest.assertNumber(value)
-  if type(value) ~= "number" then fail('type(value) = "' .. type(value) .. '"\nvalue = ' .. stringify(value),
-      "'type(value) == \"number\"'") end
+  if type(value) ~= "number" then
+    fail('type(value) = "' .. type(value) .. '"\nvalue = ' .. stringify(value),
+      "'type(value) == \"number\"'")
+  end
   return value
 end
 
@@ -290,8 +335,10 @@ end
 ---@param value any
 ---@return integer value
 function xtest.assertInteger(value)
-  if type(value) ~= "number" then fail('type(value) = "' .. type(value) .. '"\nvalue = ' .. stringify(value),
-      "'type(value) == \"number\"'") end
+  if type(value) ~= "number" then
+    fail('type(value) = "' .. type(value) .. '"\nvalue = ' .. stringify(value),
+      "'type(value) == \"number\"'")
+  end
   if math.floor(value) ~= value then fail("value = " .. value, "'value is integer'") end
   return value
 end
@@ -300,8 +347,10 @@ end
 ---@param value any
 ---@return string value
 function xtest.assertString(value)
-  if type(value) ~= "string" then fail('type(value) = "' .. type(value) .. '"\nvalue = ' .. stringify(value),
-      "'type(value) == \"string\"'") end
+  if type(value) ~= "string" then
+    fail('type(value) = "' .. type(value) .. '"\nvalue = ' .. stringify(value),
+      "'type(value) == \"string\"'")
+  end
   return value
 end
 
@@ -309,8 +358,10 @@ end
 ---@param value any
 ---@return boolean value
 function xtest.assertBoolean(value)
-  if type(value) ~= "boolean" then fail('type(value) = "' .. type(value) .. '"\nvalue = ' .. stringify(value),
-      "'type(value) == \"boolean\"'") end
+  if type(value) ~= "boolean" then
+    fail('type(value) = "' .. type(value) .. '"\nvalue = ' .. stringify(value),
+      "'type(value) == \"boolean\"'")
+  end
   return value
 end
 
@@ -334,8 +385,10 @@ end
 ---@param value any
 ---@return table value
 function xtest.assertTable(value)
-  if type(value) ~= "table" then fail('type(value) = "' .. type(value) .. '"\nvalue = ' .. stringify(value),
-      "'type(value) == \"table\"'") end
+  if type(value) ~= "table" then
+    fail('type(value) = "' .. type(value) .. '"\nvalue = ' .. stringify(value),
+      "'type(value) == \"table\"'")
+  end
   return value
 end
 
@@ -343,8 +396,10 @@ end
 ---@param value any
 ---@return function value
 function xtest.assertFunction(value)
-  if type(value) ~= "function" then fail('type(value) = "' .. type(value) .. '"\nvalue = ' .. stringify(value),
-      "'type(value) == \"function\"'") end
+  if type(value) ~= "function" then
+    fail('type(value) = "' .. type(value) .. '"\nvalue = ' .. stringify(value),
+      "'type(value) == \"function\"'")
+  end
   return value
 end
 
@@ -352,8 +407,10 @@ end
 ---@param value any
 ---@return thread value
 function xtest.assertThread(value)
-  if type(value) ~= "thread" then fail('type(value) = "' .. type(value) .. '"\nvalue = ' .. stringify(value),
-      "'type(value) == \"thread\"'") end
+  if type(value) ~= "thread" then
+    fail('type(value) = "' .. type(value) .. '"\nvalue = ' .. stringify(value),
+      "'type(value) == \"thread\"'")
+  end
   return value
 end
 
@@ -361,8 +418,10 @@ end
 ---@param value any
 ---@return userdata value
 function xtest.assertUserdata(value)
-  if type(value) ~= "userdata" then fail('type(value) = "' .. type(value) .. '"\nvalue = ' .. stringify(value),
-      "'type(value) == userdata'") end
+  if type(value) ~= "userdata" then
+    fail('type(value) = "' .. type(value) .. '"\nvalue = ' .. stringify(value),
+      "'type(value) == \"userdata\"'")
+  end
   return value
 end
 
@@ -381,8 +440,10 @@ end
 ---@param sType "nil" | "number" | "string" | "boolean" | "table" | "function" | "thread" | "userdata"
 ---@return any value
 function xtest.assertNotType(value, sType)
-  if type(value) == sType then fail("value = " .. stringify(value) .. "\ntype = " .. sType,
-      "'type(value) ~= " .. sType .. "'") end
+  if type(value) == sType then
+    fail("value = " .. stringify(value) .. "\ntype = " .. sType,
+      "'type(value) ~= " .. sType .. "'")
+  end
   return value
 end
 
@@ -445,7 +506,7 @@ function xtest.assertHasItem(item)
       end
     end
   end
-  fail("No item " .. item .. " in inventory", "'Has item " .. item .. " in inventory'")
+  fail("No item " .. item .. " in inventory", "'Has " .. item .. " in inventory'")
 end
 
 ---Asserts that an item is in the inventory and has at least `count` of it
@@ -468,7 +529,7 @@ function xtest.assertHasItemCount(item, count)
     end
   end
   fail("No item " .. item .. " with count " .. count .. " in inventory",
-    "'Has item " .. item .. " with count " .. count .. " in inventory'")
+    "'Has " .. count .. item .. "'s items in inventory'")
 end
 
 ---Asserts that a peripheral is attached
@@ -480,8 +541,9 @@ end
 ---Asserts that a peripheral is attached on a side
 ---@param side "bottom" | "top" | "left" | "right" | "front" | "back"
 function xtest.assertPeripheralOnSide(side)
-  if not peripheral.isPresent(side) then fail("No peripheral on side" .. side .. "is attached",
-      side .. " peripheral present'") end
+  if not peripheral.isPresent(side) then
+    fail("No peripheral on side" .. side .. "is attached", side .. " peripheral present'")
+  end
 end
 
 ---Asserts that rednet is open
