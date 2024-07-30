@@ -1,4 +1,5 @@
 local abs, error, type, tostring, pairs, unpack = math.abs, error, type, tostring, pairs, unpack or table.unpack
+local mkdir = fs.makeDir or function (dir) os.execute("mkdir ".. dir) end
 local xtest = {}
 
 --- Converts a value to a string for printing.
@@ -549,6 +550,25 @@ end
 ---Asserts that rednet is open
 function xtest.assertRednetIsOpen()
   if not rednet.isOpen() then fail("No connections on Rednet are currently open", "'rednet.isOpen()'") end
+end
+
+-- Helper functions
+
+--- Creates a file to be used for testing
+--- The file is located in the directory `xtestfiles` relative to the current working directory
+---@param name string
+---@param contents? string
+---@param preventReplace? boolean
+---@return file*
+function xtest.file(name, contents, preventReplace)
+  pcall(mkdir, "xtestfiles")
+  local f = assert(io.open("xtestfiles/" .. name,"w+"))
+  local size = f:seek("end")
+  f:seek("set")
+  if not preventReplace and size > 0 then
+    f:write(contents)
+  end
+  return f
 end
 
 return xtest
