@@ -556,9 +556,9 @@ end
 
 --- Creates a file to be used for testing
 --- The file is located in the directory `xtestfiles` relative to the current working directory
----@param name string
----@param contents? string
----@param preventReplace? boolean
+---@param name string the name of the file
+---@param contents? string the contents of the file
+---@param preventReplace? boolean prevents overwriting an existing file's contents
 ---@return file*
 function xtest.file(name, contents, preventReplace)
   pcall(mkdir, "xtestfiles")
