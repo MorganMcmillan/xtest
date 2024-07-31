@@ -1,5 +1,5 @@
-local abs, error, type, tostring, pairs, unpack = math.abs, error, type, tostring, pairs, unpack or table.unpack
-local mkdir = fs.makeDir or function (dir) os.execute("mkdir ".. dir) end
+local abs, floor, error, type, tostring, pairs, unpack = math.abs, math.floor, error, type, tostring, pairs, unpack or table.unpack
+local mkdir = fs and fs.makeDir or function (dir) os.execute("mkdir ".. dir) end
 local xtest = {}
 
 --- Converts a value to a string for printing.
@@ -238,7 +238,7 @@ end
 ---@return any right
 function xtest.assertApproxEq(left, right, margin)
   margin = margin or (2 ^ -52) -- Machine epsilon
-  if math.abs(left - right) <= margin then
+  if abs(left - right) <= margin then
     fail("left = " .. left .. ",\nright = " .. right .. "\nmargin = " .. margin, "'left is approximately equal to right'")
   end
   return left, right
@@ -340,7 +340,7 @@ function xtest.assertInteger(value)
     fail('type(value) = "' .. type(value) .. '"\nvalue = ' .. stringify(value),
       "'type(value) == \"number\"'")
   end
-  if math.floor(value) ~= value then fail("value = " .. value, "'value is integer'") end
+  if floor(value) ~= value then fail("value = " .. value, "'value is integer'") end
   return value
 end
 
@@ -562,13 +562,20 @@ end
 ---@return file*
 function xtest.file(name, contents, preventReplace)
   pcall(mkdir, "xtestfiles")
-  local f = assert(io.open("xtestfiles/" .. name,"w+"))
+  local f = assert(io.open("xtestfiles/" .. name, contents and "w+" or "r+"))
   local size = f:seek("end")
+  if size == 0 then
+    f:write("")
+    f:flush()
+  end
   f:seek("set")
-  if not preventReplace and size > 0 then
+  if not preventReplace and contents then
     f:write(contents)
+    f:flush()
+    f:seek("set")
   end
   return f
 end
 
 return xtest
+
