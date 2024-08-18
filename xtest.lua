@@ -152,7 +152,7 @@ end
 function xtest.assertShallowEq(left, right)
   for k, v in pairs(left) do
     if right[k] ~= v then
-      fail("left[" .. stringify(k) .. "] = " .. v .. ",\nright[" .. stringify(k) .. "] = " .. stringify(right[k]),
+      fail("left[" .. stringify(k) .. "] = " .. stringify(v) .. ",\nright[" .. stringify(k) .. "] = " .. stringify(right[k]),
         "'left is shallowly equal to right'")
     end
   end
